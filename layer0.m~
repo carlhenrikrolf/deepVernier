@@ -1,4 +1,4 @@
-function layer0
+function accuracies = layer0
 %% Parameters
 nSamples = 300;
 imSize = [227, 227];
@@ -85,6 +85,11 @@ for k = 0:nExperiments
     MSEs(1,k+1) = immse(t,predictions);
 end
 %% Classifiers
+    function classifier = hiddenClassifier
+        hiddenLayerSize = 100;
+        classifier = patternnet(hiddenLayerSize);
+        
+    end
     function classifier = softmaxClassifier
         classifier = network(1,1,1,1,0,1);
         classifier.layers{1,1}.transferFcn = 'logsig';

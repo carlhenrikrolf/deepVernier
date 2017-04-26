@@ -1,6 +1,6 @@
-function accuracies = layer0
+function accuracies = layer0(nSamples)
 %% Parameters
-nSamples = 300;
+%nSamples = 500;
 imSize = [227, 227];
 D = 1:5; % 1:10
 T = 1:3; % 1:5
@@ -51,7 +51,7 @@ end
 t = trainAnswers-1;
 %%
 disp('training classifier')
-classifier = softmaxClassifier;
+classifier = hiddenClassifier;
 [classifier, TR] = train(classifier,x,t,'reduction',500);
 plotperform(TR)
 
@@ -85,6 +85,24 @@ for k = 0:nExperiments
     MSEs(1,k+1) = immse(t,predictions);
 end
 %% Classifiers
+    function classifier = hiddenClassifier
+        hiddenLayerSize = 100;
+        classifier = patternnet(hiddenLayerSize);
+        classifier.trainFcn = 'trainscg';
+        classifier.divideFcn = 'dividerand';
+        classifier.divideParam.trainRatio = 0.7;
+        classifier.divideParam.valRatio = 0.15;
+        classifier.divideParam.testRatio = 0.15;
+        classifier.trainParam.epochs = 100;
+        classifier.trainParam.goal = 0;
+        classifier.trainParam.time = inf;
+        classifier.trainParam.min_grad = 1e-6;
+        classifier.trainParam.max_fail = 6; %default 6
+        classifier.trainParam.sigma = 5e-5; %default 5e-5
+        classifier.trainParam.lambda = 5e-7;
+        classifier.trainParam.showWindow = 1;
+    end
+
     function classifier = softmaxClassifier
         classifier = network(1,1,1,1,0,1);
         classifier.layers{1,1}.transferFcn = 'logsig';
