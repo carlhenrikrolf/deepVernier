@@ -1,4 +1,4 @@
-function accuracies = layer0(nSamples)
+function accuracies = layer0(nSamples,hiddenLayerSize)
 %% Parameters
 %nSamples = 300;
 imSize = [50, 200];
@@ -51,7 +51,7 @@ end
 t = trainAnswers-1;
 %%
 disp('training classifier')
-classifier = NNClassifier(x,t);
+classifier = NNClassifier(x,t,hiddenLayerSize);
 
 
 %%
@@ -84,19 +84,19 @@ for k = 0:nExperiments
     MSEs(1,k+1) = immse(t,predictions);
 end
 %% Classifiers
-    function classifier = NNClassifier(x,t)
-        classifier = hiddenClassifier;
+    function classifier = NNClassifier(x,t,hiddenLayerSize)
+        classifier = hiddenClassifier(hiddenLayerSize);
         [classifier, TR] = train(classifier,x,t,'reduction',500);
         %plotperform(TR)
-        function classifier = hiddenClassifier
-            hiddenLayerSize = 100;
+        function classifier = hiddenClassifier(hiddenLayerSize)
+            %hiddenLayerSize = 100;
             classifier = patternnet(hiddenLayerSize);
             classifier.trainFcn = 'trainscg';
             classifier.divideFcn = 'dividerand';
             classifier.divideParam.trainRatio = 0.7;
             classifier.divideParam.valRatio = 0.15;
             classifier.divideParam.testRatio = 0.15;
-            classifier.trainParam.epochs = 100;
+            classifier.trainParam.epochs = 1500;
             classifier.trainParam.goal = 0;
             classifier.trainParam.time = inf;
             classifier.trainParam.min_grad = 1e-6;
