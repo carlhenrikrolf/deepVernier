@@ -8,8 +8,8 @@ L = 3:7; % 5:12
 nUncrowded = 1:3;
 nExperiments = 1 + 1 + length(nUncrowded);
 testSize = round(0.3*nSamples);
-seed = 1995;
-rng(seed);
+% seed = 1995;
+% rng(seed);
 %%
 if 1
     tic
