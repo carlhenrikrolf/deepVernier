@@ -1,11 +1,11 @@
 function accuracies = layer0(nSamples)
 %% Parameters
 %nSamples = 300;
-imSize = [227, 227];
-D = 1:5; % 1:10
-T = 1:3; % 1:5
-L = 3:7; % 5:12
-nUncrowded = 1:3;
+imSize = [50, 200];
+D = 1:10; % 1:10
+T = 1:5; % 1:5
+L = 5:12; % 5:12
+nUncrowded = 1;
 nExperiments = 1 + 1 + length(nUncrowded);
 testSize = round(0.3*nSamples);
 % seed = 1995;
