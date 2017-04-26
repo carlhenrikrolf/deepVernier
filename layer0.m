@@ -1,7 +1,7 @@
 function accuracies = layer0(nSamples,hiddenLayerSize)
 %% Parameters
 %nSamples = 300;
-imSize = [50, 200];
+imSize = [50, 160]; %min = [45, 155]
 D = 1:10; % 1:10
 T = 1:5; % 1:5
 L = 5:12; % 5:12
@@ -37,6 +37,7 @@ disp('preprocessing stimuli')
 temp = trainSet(:,:,i);
 im = repmat(temp(:,:)*255,[1,1,3]);
 im_ = single(im) ;
+im_ = imresize(im_, [227 227]) ;
 xlen = length(im_(:));
 x = zeros(xlen,2*nSamples);
 x(:,1) = im_(:);
@@ -45,6 +46,7 @@ for i = 2:2*nSamples
     temp = trainSet(:,:,i);
     im = repmat(temp(:,:)*255,[1,1,3]);
     im_ = single(im) ;
+    im_ = imresize(im_, [227 227]) ;
     x(:,i) = im_(:);
     clear temp im im_
 end
@@ -75,6 +77,7 @@ for k = 0:nExperiments
         temp = testSet(:,:,i);
         im = repmat(temp(:,:)*255,[1,1,3]);
         im_ = single(im) ;
+        im_ = imresize(im_, [227 227]) ;
         x(:,i) = im_(:);
         clear temp im im_
     end
