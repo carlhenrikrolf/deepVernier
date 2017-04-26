@@ -1,0 +1,93 @@
+%% Parameters
+nSamples = 5000;
+imSize = [227, 227];
+D = 1:5; % 1:10
+T = 1:3; % 1:5
+L = 3:7; % 5:12
+nUncrowded = 1:3;
+nExperiments = 1 + 1 + length(nUncrowded);
+testSize = round(0.3*nSamples);
+seed = 1995;
+rng(seed);
+%%
+if 0
+    tic
+    disp('creating stimuli');
+    [normalTrainSet, normalTestSet, normalTrainAnswers, normalTestAnswers] = ...
+        makeTrainingAndTestingSampleSets(nSamples, imSize, D, T, L);
+    [~, crowdedTestSet, ~, crowdedTestAnswers] = ...
+        makeCrowdedTrainingAndTestingSampleSets(nSamples, imSize, D, T, L);
+    
+    uncrowdedTestSets = cell(1,length(nUncrowded));
+    uncrowdedTestAnswers = cell(1,length(nUncrowded));
+    for i = 1:length(nUncrowded)
+        [~, uncrowdedTestSets{1,i}, ~, uncrowdedTestAnswers{1,i}] = ...
+            makeUncrowdedTrainingAndTestingSampleSets(nSamples, imSize, D, T, L, nUncrowded(i));
+    end
+end
+%%
+trainSet = normalTrainSet;
+trainAnswers = normalTrainAnswers;
+
+accuracies = zeros(1,1);
+MSEs = zeros(1,1);
+
+temp = trainSet(:,:,i);
+im = repmat(temp(:,:)*255,[1,1,3]);
+im_ = single(im) ;
+xlen = length(im_(:));
+x = zeros(xlen,2*nSamples);
+x(:,1) = im_;
+clear temp im im_
+for i = 2:2*nSamples
+    temp = trainSet(:,:,i);
+    im = repmat(temp(:,:)*255,[1,1,3]);
+    im_ = single(im) ;
+    x(:,i) = im_(:);
+    clear temp im im_
+end
+t = trainAnswers-1;
+
+classifier = network(1,1,1,1,0,1);
+classifier.layers{1,1}.transferFcn = 'logsig';
+classifier.trainFcn = 'trainscg';
+classifier.divideFcn = 'dividerand';
+classifier.divideParam.trainRatio = 0.7;
+classifier.divideParam.valRatio = 0.15;
+classifier.divideParam.testRatio = 0.15;
+classifier.trainParam.epochs = 100;
+classifier.trainParam.goal = 0;
+classifier.trainParam.time = inf;
+classifier.trainParam.min_grad = 1e-6;
+classifier.trainParam.max_fail = 20;
+classifier.trainParam.sigma = 5e-5; %default 5e-5
+classifier.trainParam.lambda = 5e-7;
+classifier.trainParam.showWindow = 1;
+[classifier, TR] = train(classifier,x,t,'reduction',500);
+plotperform(TR)
+%%
+
+for k = 1:nExperiments
+    if k == 1
+        testSet = normalTestSet(:,:,1:testSize);
+        testAnswers = normalTestAnswers(1:testSize);
+    elseif k == 2
+        testSet = crowdedTestSet(:,:,1:testSize);
+        testAnswers = crowdedTestAnswers(1:testSize);
+    else
+        testSet = uncrowdedTestSets{1,k-2}(:,:,1:testSize);
+        testAnswers = uncrowdedTestAnswers{1,k-2}(1:testSize);
+    end
+    x = zeros(xlen,testSize);
+    for i = 1:testSize
+        temp = testSet(:,:,i);
+        im = repmat(temp(:,:)*255,[1,1,3]);
+        im_ = single(im) ;
+        x(:,i) = im_(:);
+        clear temp im im_
+    end
+    t = testAnswers-1;
+    predictions = classifier(x);
+    accuracies(1,k+1) = accuracy(t,predictions);
+    MSEs(1,k+1) = immse(t,predictions);
+end
