@@ -1,4 +1,4 @@
-function accuracies = layer0
+function layer0
 %% Parameters
 nSamples = 300;
 imSize = [227, 227];
