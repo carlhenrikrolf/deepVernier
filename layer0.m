@@ -94,18 +94,18 @@ end
         function classifier = hiddenClassifier(hiddenLayerSize)
             %hiddenLayerSize = 100;
             classifier = patternnet(hiddenLayerSize);
-            classifier.trainFcn = 'trainscg';
+            %classifier.trainFcn = 'trainscg';
             classifier.divideFcn = 'dividerand';
             classifier.divideParam.trainRatio = 0.7;
             classifier.divideParam.valRatio = 0.15;
             classifier.divideParam.testRatio = 0.15;
-            classifier.trainParam.epochs = 1500;
-            classifier.trainParam.goal = 0;
-            classifier.trainParam.time = inf;
-            classifier.trainParam.min_grad = 1e-6;
-            classifier.trainParam.max_fail = 6; %default 6
-            classifier.trainParam.sigma = 5e-5; %default 5e-5
-            classifier.trainParam.lambda = 5e-7;
+%             classifier.trainParam.epochs = 1500;
+%             classifier.trainParam.goal = 0;
+%             classifier.trainParam.time = inf;
+%             classifier.trainParam.min_grad = 1e-6;
+%             classifier.trainParam.max_fail = 6; %default 6
+%             classifier.trainParam.sigma = 5e-5; %default 5e-5
+%             classifier.trainParam.lambda = 5e-7;
             classifier.trainParam.showWindow = 1;
         end
         
