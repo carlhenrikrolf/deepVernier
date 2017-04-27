@@ -1,4 +1,4 @@
-nSamples = 2000:2000:14000;
+nSamples = 6000:2000:16000;
 N = length(nSamples);
 results = cell(1,N);
 parfor n = 1:N
