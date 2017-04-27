@@ -13,8 +13,8 @@ testSize = round(0.3*nSamples);
 % rng(seed);
 parameters = struct('imSize',imSize,...
     'offset',D,...
-    'line thickness',T,...
-    'line length',L,);
+    'thickness',T,...
+    'length',L);
 %%
 if 1
     tic
@@ -58,7 +58,7 @@ end
 t = trainAnswers-1;
 %%
 disp('training classifier')
-[classifier, TR] = NNClassifier(x,t,hiddenLayerSize);
+[classifier, TR] = NNClassifier(x,t,reduction);
 
 
 %%
@@ -94,13 +94,15 @@ end
 
 results = struct('accuracies',accuracies,...
     'MSEs',MSEs,...
-    'training record',TR,...
-    'my results','training vernier/testing vernier/testing crowded/testing uncrowding'
+    'myResults','training vernier/testing vernier/testing crowded/testing uncrowding',...
+    'trainingRecord',TR,...
+    'parameters',parameters,...
+    'samplePairs',nSamples);
 
 %% Classifiers
-    function [classifier, TR] = NNClassifier(x,t,hiddenLayerSize)
+    function [classifier, TR] = NNClassifier(x,t,reduction)
         classifier = softmaxClassifier;
-        [classifier, TR] = train(classifier,x,t,'reduction',500);
+        [classifier, TR] = train(classifier,x,t,'reduction',reduction);
         %plotperform(TR)
         function classifier = hiddenClassifier(hiddenLayerSize)
             %hiddenLayerSize = 100;

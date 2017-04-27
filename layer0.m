@@ -1,6 +1,7 @@
 function results = layer0(nSamples)
 %% Parameters
 hiddenLayerSize = [];
+reduction = nSamples/10;
 %nSamples = 300;
 imSize = [50, 160]; %min = [45, 155]
 D = 1:10; % 1:10
@@ -58,7 +59,7 @@ end
 t = trainAnswers-1;
 %%
 disp('training classifier')
-[classifier, TR] = NNClassifier(x,t,hiddenLayerSize);
+[classifier, TR] = NNClassifier(x,t,reduction);
 
 
 %%
@@ -100,9 +101,9 @@ results = struct('accuracies',accuracies,...
     'samplePairs',nSamples);
 
 %% Classifiers
-    function [classifier, TR] = NNClassifier(x,t,hiddenLayerSize)
+    function [classifier, TR] = NNClassifier(x,t,reduction)
         classifier = softmaxClassifier;
-        [classifier, TR] = train(classifier,x,t,'reduction',500);
+        [classifier, TR] = train(classifier,x,t,'reduction',reduction);
         %plotperform(TR)
         function classifier = hiddenClassifier(hiddenLayerSize)
             %hiddenLayerSize = 100;
