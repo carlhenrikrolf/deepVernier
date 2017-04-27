@@ -16,19 +16,21 @@ if 1
     disp('creating stimuli');
     [normalTrainSet, normalTestSet, normalTrainAnswers, normalTestAnswers] = ...
         makeTrainingAndTestingSampleSets(nSamples, imSize, D, T, L);
-    [~, crowdedTestSet, ~, crowdedTestAnswers] = ...
+    [crowdedTrainSet, crowdedTestSet, crowdedTrainAnswers, crowdedTestAnswers] = ...
         makeCrowdedTrainingAndTestingSampleSets(nSamples, imSize, D, T, L);
     
     uncrowdedTestSets = cell(1,length(nUncrowded));
     uncrowdedTestAnswers = cell(1,length(nUncrowded));
+    uncrowdedTrainSets = cell(1,length(nUncrowded));
+    uncrowdedTrainAnswers = cell(1,length(nUncrowded));
     for i = 1:length(nUncrowded)
-        [~, uncrowdedTestSets{1,i}, ~, uncrowdedTestAnswers{1,i}] = ...
+        [uncrowdedTrainSets{1,i}, uncrowdedTestSets{1,i}, uncrowdedTrainAnswers{1,i}, uncrowdedTestAnswers{1,i}] = ...
             makeUncrowdedTrainingAndTestingSampleSets(nSamples, imSize, D, T, L, nUncrowded(i));
     end
 end
 %%
-trainSet = normalTrainSet;
-trainAnswers = normalTrainAnswers;
+trainSet = crowdedTrainSet;
+trainAnswers = crowdedTrainAnswers;
 
 accuracies = zeros(1,1);
 MSEs = zeros(1,1);
@@ -53,7 +55,7 @@ end
 t = trainAnswers-1;
 %%
 disp('training classifier')
-options = statset('MaxIter',150000); %default 15000
+options = statset('MaxIter',1e9); %default 15000
 classifier = svmtrain(x',t,'options',options);
 
 
@@ -61,8 +63,8 @@ classifier = svmtrain(x',t,'options',options);
 disp('doing experiments')
 for k = 0:nExperiments
     if k == 0
-        testSet = normalTrainSet(:,:,1:testSize);
-        testAnswers = normalTrainAnswers(1:testSize);
+        testSet = trainSet(:,:,1:testSize);
+        testAnswers = trainAnswers(1:testSize);
     elseif k == 1
         testSet = normalTestSet(:,:,1:testSize);
         testAnswers = normalTestAnswers(1:testSize);
