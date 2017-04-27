@@ -1,7 +1,7 @@
 function results = layer0(nSamples)
 %% Parameters
 hiddenLayerSize = [];
-reduction = nSamples/10;
+reduction = nSamples/5;
 %nSamples = 300;
 imSize = [50, 160]; %min = [45, 155]
 D = 1:10; % 1:10
