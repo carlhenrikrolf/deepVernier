@@ -129,8 +129,15 @@ for currentStim = 1:length(stimSizes)
     end
 end
 %% Plot and save data
-mean_accuracies = mean(allAccuracies, 2);
-std_accuracies = std(allAccuracies, 0, 2);
+
+                                         
+                                         cd data
+                                         save('allAccuracies','allAccuracies')
+                                         save('allMSEs','allMSEs')
+                                         cd ..
+                                         
+                                         mean_accuracies = mean(allAccuracies, 2);
+                                         std_accuracies = std(allAccuracies, 0, 2);
 
 for stimSize = 1:length(stimSizes)
     
@@ -140,10 +147,7 @@ for stimSize = 1:length(stimSizes)
 
 end
 
-cd data
-save('allAccuracies','allAccuracies')
-save('allMSEs','allMSEs')
-cd ..
+
 disp('I''m glad that''s done.')
 
 
