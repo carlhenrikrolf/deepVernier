@@ -1,6 +1,6 @@
 function out = general_mine
 
-setup;
+%setup;
 
 imdb = getImdb;
 
@@ -31,15 +31,18 @@ net = vl_simplenn_tidy(net) ;
 % Train
 trainfn = @cnn_train;
 opts.train = struct('gpus',[],...
-    'backPropDepth', 1) ;
+    'backPropDepth', 0) ;
 [net, info] = trainfn(net, imdb, getBatch, ...
     net.meta.trainOpts, ...
     opts.train, ...
     'val', find(imdb.images.set == 3)) ;
 
+res = vl_simplenn(net,imdb.images.data(:,:,:,1));
+
 out = struct('net', net,...
     'info',info,...
-    'imdb',imdb);
+    'imdb',imdb,...
+    'res',res);
 
     function imdb = getImdb
         data = zeros(3,3,1,3,'single');
@@ -64,18 +67,17 @@ out = struct('net', net,...
         data_mean = mean(data,4);
         
         images = struct('data',data,...
-            'data_mean',data_mean,...
             'labels',labels,...
             'set',set_);
         imdb = struct('images',images);
     end
 
-    function fn = getBatch
-        fn = @(x,y) getSimpleNNBatch(x,y) ;
-    end
-
-    function [images, labels] = getSimpleNNBatch(imdb, batch)
-        images = imdb.images.data(:,:,:,batch) ;
-        labels = imdb.images.labels(1,batch) ;
-    end
+%     function fn = getBatch
+%         fn = @(x,y) getSimpleNNBatch(x,y) ;
+%     end
+% 
+%     function [images, labels] = getSimpleNNBatch(imdb, batch)
+%         images = imdb.images.data(:,:,:,batch) ;
+%         labels = imdb.images.labels(1,batch) ;
+%     end
 end
