@@ -1,3 +1,4 @@
+system('rm -r data/exp');
 %% Load net
 if 1
 disp('loading net');
@@ -8,14 +9,14 @@ end
 
 %% Parameters
 trainType = 'vernier';
-nRuns = 20;
-readoutLayers = [2, 6, 10, 12, 14, 17, 19, 20];
-trainSize    = 10000;         % There are 2*trainSize training samples, because L and R
+nRuns = 1;%20;
+readoutLayers = 10;%[2, 6, 10, 12, 14, 17, 19, 20];
+trainSize    = 500;%10000;         % There are 2*trainSize training samples, because L and R
 imSize       = [227,227];
 nUncrowded   = 0;       % 1 = 3 squares ; 2 = 5 squares ; 3 = 7 squares
 
 net.meta.trainOpts.learningRate = 0.001 ;
-net.meta.trainOpts.numEpochs = 20 ;
+net.meta.trainOpts.numEpochs = 3 ;
 net.meta.trainOpts.batchSize = 1 ;
 
 if nUncrowded
@@ -50,11 +51,11 @@ for currentStim = 1:length(stimSizes)
     %% Create sets
     disp('creating stimuli');
     if strcmp(trainType,'vernier')
-        [trainSet, vernierTestSet, trainAnswers, vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, testSize, imSize, D, T, L);
-        [~,        crowdedTestSet, ~,            crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, testSize, imSize, D, T, L);
+        [trainSet, vernierTestSet, trainAnswers, vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, imSize, D, T, L);
+        [~,        crowdedTestSet, ~,            crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, imSize, D, T, L);
     else
-        [~,        vernierTestSet, ~,            vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, testSize, imSize, D, T, L);
-        [trainSet, crowdedTestSet, trainAnswers, crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, testSize, imSize, D, T, L);
+        [~,        vernierTestSet, ~,            vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, imSize, D, T, L);
+        [trainSet, crowdedTestSet, trainAnswers, crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, imSize, D, T, L);
     end
     uncrowdedTestSets = cell(1,length(nUncrowded));
     uncrowdedTestAnswers = cell(1,length(nUncrowded));
@@ -64,16 +65,18 @@ for currentStim = 1:length(stimSizes)
             [~, uncrowdedTestSets{1,i}, ~, uncrowdedTestAnswers{1,i}] = makeUncrowdedTrainingAndTestingSampleSets(trainSize, testSize, imSize, D, T, L, nUncrowded(i));
         end
     end
-    % figure()
-    % for i = 1:testSize
-    %     imagesc(crowdedTestSet(:,:,i))
-    %     drawnow
-    % end
     
     trainImdb = makeImdb(trainSet,trainAnswers);
     vernierImdb = makeImdb(vernierTestSet(:,:,1:testSize),vernierTestAnswers(1:testSize));
     crowdedImdb = makeImdb(crowdedTestSet(:,:,1:testSize),crowdedTestAnswers(1:testSize));
 
+    figure()
+    for i = 1:testSize
+        imagesc(trainImdb.images.data(:,:,:,i))%crowdedTestSet(:,:,i))
+        drawnow
+    end
+    
+    infos = cell(nRuns,length(readoutLayers));
     for run = 1:nRuns
         %% Build Training sets filtered through DNN, train and test for all conditions
         accuracies = zeros(length(readoutLayers),nExperiments+1);
@@ -85,17 +88,33 @@ for currentStim = 1:length(stimSizes)
             N = N+1;
             
             %% Add softmax
-            net.layers{1,N:end} = [];
-            net.layers{1,N} = struct('type','softmaxloss');
+            for v = currentLayer:-1:1
+                if size(net.layers{1,v}.weights,2) == 2
+                    nFeats = size(net.layers{1,v}.weights{1,1},4);
+                    break
+                end
+            end
+            net.layers(currentLayer+1:21) = [];
+            net.layers{end+1} = struct('type', 'conv', ...
+                           'weights', {{0.05*randn(1,1,nFeats,2, 'single'), zeros(1,2,'single')}}, ...
+                           'learningRate',[.01 .01],...
+                           'stride', 1, ...
+                           'pad', 0,...
+                           'errorFunction','binary') ;
+            net.layers{end+1} = struct('type', 'softmaxloss') ;
             
             %% Train
             [net, info] = cnn_train(net,trainImdb,getBatch,...
                 net.meta.trainOpts,...
-                'backDropDepth',1,...
-                'val',find(imdb.images.set == 3));
+                'backPropDepth',2,...
+                'val',find(trainImdb.images.set == 3));
+            infos{run,N} = info;
             
             %% Get data 
-            [accuracies(N,1), MSEs(N,1)] = getResult(net,trainImdb.images.data(:,:,:,1:testSize),answers(1:testSize));
+            res = vl_simplenn(net,...
+                trainImdb.images.data(:,:,:,1))
+            %net.layers(end) = [];
+            [accuracies(N,1), MSEs(N,1)] = getResult(net,trainImdb.images.data(:,:,:,1:testSize),trainImdb.images.labels(1:testSize));
 
             %% Test the classifier
             for k = 1:nExperiments
