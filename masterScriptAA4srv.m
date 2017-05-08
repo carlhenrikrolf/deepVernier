@@ -48,11 +48,11 @@ for currentStim = 1:length(stimSizes)
     %% Create sets
     disp('creating stimuli');
     if strcmp(trainType,'vernier')
-        [trainSet, vernierTestSet, trainAnswers, vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, testSize, imSize, D, T, L);
-        [~,        crowdedTestSet, ~,            crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, testSize, imSize, D, T, L);
+        [trainSet, vernierTestSet, trainAnswers, vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, imSize, D, T, L);
+        [~,        crowdedTestSet, ~,            crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, imSize, D, T, L);
     else
-        [~,        vernierTestSet, ~,            vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, testSize, imSize, D, T, L);
-        [trainSet, crowdedTestSet, trainAnswers, crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, testSize, imSize, D, T, L);
+        [~,        vernierTestSet, ~,            vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, imSize, D, T, L);
+        [trainSet, crowdedTestSet, trainAnswers, crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, imSize, D, T, L);
     end
     uncrowdedTestSets = cell(1,length(nUncrowded));
     uncrowdedTestAnswers = cell(1,length(nUncrowded));
@@ -68,7 +68,7 @@ for currentStim = 1:length(stimSizes)
     %     drawnow
     % end
     
-    parfor run = 1:nRuns
+    for run = 1:nRuns
         %% Build Training sets filtered through DNN, train and test for all conditions
         accuracies = zeros(length(readoutLayers),nExperiments+1);
         MSEs = zeros(length(readoutLayers),nExperiments+1);
@@ -99,7 +99,7 @@ for currentStim = 1:length(stimSizes)
             classifier.trainParam.sigma = 5e-5; %default 5e-5
             classifier.trainParam.lambda = 5e-7;
             classifier.trainParam.showWindow = 1;
-            [classifier, TR] = train(classifier,x,t,'reduction',500);
+            [classifier, TR] = train(classifier,netTrainSet',netTrainAnswers','reduction',500);
             
             allClassifiers{currentStim,run,currentLayer} = classifier;
             allTrainResults{currentStim,run,currentLayer} = TR;

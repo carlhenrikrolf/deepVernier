@@ -10,7 +10,7 @@ end
 %% Parameters
 trainType = 'vernier';
 nRuns = 1;%20;
-readoutLayers = 10;%[2, 6, 10, 12, 14, 17, 19, 20];
+readoutLayers = 2;%[2, 6, 10, 12, 14, 17, 19, 20];
 trainSize    = 500;%10000;         % There are 2*trainSize training samples, because L and R
 imSize       = [227,227];
 nUncrowded   = 0;       % 1 = 3 squares ; 2 = 5 squares ; 3 = 7 squares
@@ -70,11 +70,11 @@ for currentStim = 1:length(stimSizes)
     vernierImdb = makeImdb(vernierTestSet(:,:,1:testSize),vernierTestAnswers(1:testSize));
     crowdedImdb = makeImdb(crowdedTestSet(:,:,1:testSize),crowdedTestAnswers(1:testSize));
 
-    figure()
-    for i = 1:testSize
-        imagesc(trainImdb.images.data(:,:,:,i))%crowdedTestSet(:,:,i))
-        drawnow
-    end
+%     figure()
+%     for i = 1:testSize
+%         imagesc(trainImdb.images.data(:,:,:,i))%crowdedTestSet(:,:,i))
+%         drawnow
+%     end
     
     infos = cell(nRuns,length(readoutLayers));
     for run = 1:nRuns
@@ -112,7 +112,7 @@ for currentStim = 1:length(stimSizes)
             
             %% Get data 
             res = vl_simplenn(net,...
-                trainImdb.images.data(:,:,:,1))
+                trainImdb.images.data(:,:,:,1));
             %net.layers(end) = [];
             [accuracies(N,1), MSEs(N,1)] = getResult(net,trainImdb.images.data(:,:,:,1:testSize),trainImdb.images.labels(1:testSize));
 

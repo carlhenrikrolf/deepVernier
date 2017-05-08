@@ -10,7 +10,7 @@ end
 trainType = 'vernier';
 nRuns = 20;
 readoutLayers = [2, 6, 10, 12, 14, 17, 19, 20];
-trainSize    = 10000;         % There are 2*trainSize training samples, because L and R
+trainSize    = 500;%10000;         % There are 2*trainSize training samples, because L and R
 imSize       = [227,227];
 nUncrowded   = 0;       % 1 = 3 squares ; 2 = 5 squares ; 3 = 7 squares
 if nUncrowded
@@ -48,11 +48,11 @@ for currentStim = 1:length(stimSizes)
     %% Create sets
     disp('creating stimuli');
     if strcmp(trainType,'vernier')
-        [trainSet, vernierTestSet, trainAnswers, vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, testSize, imSize, D, T, L);
-        [~,        crowdedTestSet, ~,            crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, testSize, imSize, D, T, L);
+        [trainSet, vernierTestSet, trainAnswers, vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, imSize, D, T, L);
+        [~,        crowdedTestSet, ~,            crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, imSize, D, T, L);
     else
-        [~,        vernierTestSet, ~,            vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, testSize, imSize, D, T, L);
-        [trainSet, crowdedTestSet, trainAnswers, crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, testSize, imSize, D, T, L);
+        [~,        vernierTestSet, ~,            vernierTestAnswers] = makeTrainingAndTestingSampleSets(       trainSize, imSize, D, T, L);
+        [trainSet, crowdedTestSet, trainAnswers, crowdedTestAnswers] = makeCrowdedTrainingAndTestingSampleSets(trainSize, imSize, D, T, L);
     end
     uncrowdedTestSets = cell(1,length(nUncrowded));
     uncrowdedTestAnswers = cell(1,length(nUncrowded));
@@ -99,17 +99,18 @@ for currentStim = 1:length(stimSizes)
             classifier.trainParam.sigma = 5e-5; %default 5e-5
             classifier.trainParam.lambda = 5e-7;
             classifier.trainParam.showWindow = 1;
-            [classifier, TR] = train(classifier,x,t,'reduction',500);
+            [classifier, TR] = train(classifier,netTra,t,'reduction',500);
             
             allClassifiers{currentStim,run,currentLayer} = classifier;
-            allTrainResults{currentStim,run,currentLayer} = TR;
+            allTrainResults{currentStim,run,currentLayer} = TrainResults;
             
             %% Train set
             predictions     = classifier(netTrainSet(1:testSize,:)');
             answers         = netTrainAnswers(1:testSize)';
             accuracies(N,1) = accuracy(answers,predictions);
             MSEs(N,1)       = immse(answers,predictions);
-            clear netTrainSet netTrainAnswers
+            netTrainSet = [];
+            netTrainAnswers = [];
             
             %% Test the classifier
             for k = 1:nExperiments
@@ -127,7 +128,7 @@ for currentStim = 1:length(stimSizes)
                 accuracies(N,k+1) = accuracy(testAnswers-1,predictions);
                 MSEs(N,k+1)       = immse(   testAnswers-1,predictions);
             end
-            clear classifier
+            classifier = [];
             disp(['... for currentLayer = ', num2str(currentLayer)])
         end
         allAccuracies(currentStim, run, :, :) = accuracies;
