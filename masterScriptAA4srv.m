@@ -10,7 +10,7 @@ end
 trainType = 'vernier';
 nRuns = 20;
 readoutLayers = [2, 6, 10, 12, 14, 17, 19, 20];
-trainSize    = 10000;         % There are 2*trainSize training samples, because L and R
+trainSize    = 5000;         % There are 2*trainSize training samples, because L and R
 imSize       = [227,227];
 nUncrowded   = 0;       % 1 = 3 squares ; 2 = 5 squares ; 3 = 7 squares
 if nUncrowded
@@ -26,6 +26,9 @@ allMSEs = zeros(length(stimSizes), nRuns, length(readoutLayers), nExperiments+1)
 
 allClassifiers = cell(length(stimSizes),nRuns,length(readoutLayers));
 allTrainResults = allClassifiers;
+
+dirName = num2str(fix(clock));
+mkdir('data/masterScriptAA4srv/',dirName)
 
 for currentStim = 1:length(stimSizes)
     currentSize = stimSizes{currentStim};
@@ -133,27 +136,28 @@ for currentStim = 1:length(stimSizes)
         end
         allAccuracies(currentStim, run, :, :) = accuracies;
         allMSEs(currentStim, run, :, :) = MSEs;
+        cd(['data/masterScriptAA4srv/', dirName])
+        save('allAccuracies','allAccuracies')
+        save('allMSEs','allMSEs')
+        save('allClassifiers','allClassifiers')
+        save('allTrainResults','allTrainResults')
+        cd ../../..
     end
 end
-%% Plot and save data
+%% Plot data
 
 
-cd data
-save('allAccuracies','allAccuracies')
-save('allMSEs','allMSEs')
-save('allClassifiers','allClassifiers')
-save('allTrainResults','allTrainResults')
-cd ..
+
 
 % mean_accuracies = mean(allAccuracies, 2);
 % std_accuracies = std(allAccuracies, 0, 2);
-% 
+%
 % for stimSize = 1:length(stimSizes)
-%     
+%
 %     figure(stimSize)
 %     hold on
 %     plotAccuracies(squeeze(mean_accuracies(stimSize, 1, :, :)), squeeze(std_accuracies(stimSize, 1, :, :)))
-%     
+%
 % end
 
 
